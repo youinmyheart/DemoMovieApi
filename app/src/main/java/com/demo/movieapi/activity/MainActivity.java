@@ -1,17 +1,26 @@
-package com.demo.movieapi;
+package com.demo.movieapi.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ImageView;
 
+import com.demo.movieapi.R;
+import com.demo.movieapi.adapter.TrendingRecyclerViewAdapter;
 import com.demo.movieapi.model.GenreResponse;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.model.TMDBResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,6 +29,9 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private RecyclerView trendingView;
+    private List<TMDBResponse.Movie> trendingList;
+    private TrendingRecyclerViewAdapter trendingRecyclerViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,16 +39,25 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
         hideActionBar();
         setContentView(R.layout.home_activity);
-        ImageView imv_load_more = findViewById(R.id.imv_load_more);
-        imv_load_more.setImageResource(R.drawable.ic_play_blue);
-//        getTrending();
+        setUpView();
+        getTrending();
 //        getGenre();
 //        getPopular();
 //        getTopRated();
 //        getUpcoming();
 //        getMovieDetail();
 //        getMovieReview();
-        getMovieRecommendations();
+//        getMovieRecommendations();
+    }
+
+    private void setUpView() {
+        ImageView imvLoadMore = findViewById(R.id.imv_load_more);
+
+        trendingView = findViewById(R.id.trendingList);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        trendingView.setLayoutManager(linearLayoutManager);
+
+        trendingList = new ArrayList<>();
     }
 
     private void hideActionBar() {
@@ -48,13 +69,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getTrending() {
+        Log.d(TAG, "getTrending");
         Call<TMDBResponse> call = APIManager.getTrendingMovieWeek(1);
         call.enqueue(new Callback<TMDBResponse>() {
             @Override
             public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
                 Log.d(TAG, "onResponse: " + response.body());
-                TMDBResponse res = response.body();
-                Log.d(TAG, "movie id: " + res.getMovies().get(0).getId());
+                trendingList = response.body().getMovies();
+                Log.d(TAG, "trendingList size: " + trendingList.size());
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int height = displayMetrics.heightPixels;
+                int width = displayMetrics.widthPixels;
+                trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(MainActivity.this, trendingList);
+                trendingView.setAdapter(trendingRecyclerViewAdapter);
             }
 
             @Override

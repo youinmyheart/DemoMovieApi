@@ -13,7 +13,8 @@ buildscript {
 
     ext.versions = [
             'retrofit': '2.9.0',
-            'okhttp': '3.14.9'
+            'okhttp': '3.14.9',
+            'picasso':'2.5.2'
     ]
 }
 
