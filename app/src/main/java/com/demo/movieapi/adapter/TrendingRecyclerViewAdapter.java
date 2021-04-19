@@ -2,14 +2,11 @@ package com.demo.movieapi.adapter;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -17,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.R;
 import com.demo.movieapi.Utils;
-import com.demo.movieapi.activity.MainActivity;
 import com.demo.movieapi.model.TMDBResponse;
 import com.demo.movieapi.repository.APIManager;
 import com.squareup.picasso.Callback;

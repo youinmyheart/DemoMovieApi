@@ -1,12 +1,11 @@
 package com.demo.movieapi.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ImageView;
@@ -18,6 +17,7 @@ import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.model.TMDBResponse;
+import com.demo.movieapi.viewmodel.TrendingViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView trendingView;
     private List<TMDBResponse.Movie> trendingList;
     private TrendingRecyclerViewAdapter trendingRecyclerViewAdapter;
+
+    private TrendingViewModel trendingViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
         trendingView.setLayoutManager(linearLayoutManager);
 
         trendingList = new ArrayList<>();
+        trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(MainActivity.this, trendingList);
+        trendingView.setAdapter(trendingRecyclerViewAdapter);
+        trendingViewModel = new TrendingViewModel();
     }
 
     private void hideActionBar() {
@@ -69,25 +74,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getTrending() {
-        Log.d(TAG, "getTrending");
-        Call<TMDBResponse> call = APIManager.getTrendingMovieWeek(1);
-        call.enqueue(new Callback<TMDBResponse>() {
+        trendingViewModel.getTrending().observe(this, new Observer<List<TMDBResponse.Movie>>() {
             @Override
-            public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                trendingList = response.body().getMovies();
-                Log.d(TAG, "trendingList size: " + trendingList.size());
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                int height = displayMetrics.heightPixels;
-                int width = displayMetrics.widthPixels;
-                trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(MainActivity.this, trendingList);
-                trendingView.setAdapter(trendingRecyclerViewAdapter);
-            }
-
-            @Override
-            public void onFailure(Call<TMDBResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
+            public void onChanged(List<TMDBResponse.Movie> movies) {
+                Log.d(TAG, "onChanged movies: " + movies.size());
+                trendingList.addAll(movies);
+                trendingRecyclerViewAdapter.notifyDataSetChanged();
             }
         });
     }
