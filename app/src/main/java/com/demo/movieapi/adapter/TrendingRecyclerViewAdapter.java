@@ -76,7 +76,7 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
             Log.d(TAG, "widthPixels: " + widthPixels);
             int widthDp = Utils.pxToDp(widthPixels);
             Log.d(TAG, "widthDp: " + widthDp);
-            int spacePx = Utils.dpToPx(36);
+            int spacePx = Utils.dpToPx(36 + 20);
             Log.d(TAG, "spacePx: " + spacePx);
             imvTrending.getLayoutParams().width = widthPixels - spacePx;
             imvTrending.requestLayout();
