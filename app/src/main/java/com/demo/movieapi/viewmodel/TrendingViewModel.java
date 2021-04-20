@@ -16,10 +16,12 @@ public class TrendingViewModel extends ViewModel {
         trendingRepo = new TrendingRepo();
     }
 
-    public MutableLiveData<List<TMDBResponse.Movie>> getTrending() {
-        if (mutableLiveData == null) {
-            mutableLiveData = trendingRepo.getTrending();
-        }
+    public MutableLiveData<List<TMDBResponse.Movie>> getMutableLiveData() {
+        return mutableLiveData;
+    }
+
+    public MutableLiveData<List<TMDBResponse.Movie>> getTrending(int page) {
+        mutableLiveData = trendingRepo.getTrending(page);
         return mutableLiveData;
     }
 }

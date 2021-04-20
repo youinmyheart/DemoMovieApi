@@ -1,5 +1,6 @@
 package com.demo.movieapi.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,8 +33,14 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView trendingView;
     private List<TMDBResponse.Movie> trendingList;
     private TrendingRecyclerViewAdapter trendingRecyclerViewAdapter;
+    private LinearLayoutManager trendingLayoutManager;
 
     private TrendingViewModel trendingViewModel;
+
+    private int currentPage = 0;
+    private boolean loading = true;
+    private int previousTotal = 0;
+    private int pastVisibleItems, visibleItemCount, totalItemCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         hideActionBar();
         setContentView(R.layout.home_activity);
         setUpView();
-        getTrending();
+        handleTrending();
 //        getGenre();
 //        getPopular();
 //        getTopRated();
@@ -56,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         ImageView imvLoadMore = findViewById(R.id.imv_load_more);
 
         trendingView = findViewById(R.id.trendingList);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
-        trendingView.setLayoutManager(linearLayoutManager);
+        trendingLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        trendingView.setLayoutManager(trendingLayoutManager);
 
         trendingList = new ArrayList<>();
         trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(MainActivity.this, trendingList);
@@ -73,11 +80,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getTrending() {
-        trendingViewModel.getTrending().observe(this, new Observer<List<TMDBResponse.Movie>>() {
+    private void handleTrending() {
+        Log.d(TAG, "handleTrending");
+        getTrendingWithPage(1);
+        trendingView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dx > 0) {
+                    // scroll horizontally
+                    visibleItemCount = trendingLayoutManager.getChildCount();
+                    Log.d(TAG, "visibleItemCount: " + visibleItemCount);
+                    totalItemCount = trendingLayoutManager.getItemCount();
+                    Log.d(TAG, "totalItemCount: " + totalItemCount);
+                    pastVisibleItems = trendingLayoutManager.findFirstVisibleItemPosition();
+                    Log.d(TAG, "pastVisibleItems: " + pastVisibleItems);
+                    if (loading) {
+                        if (totalItemCount > previousTotal) {
+                            loading = false;
+                            previousTotal = totalItemCount;
+                            currentPage++;
+                        }
+                    }
+
+                    // When no new pages are being loaded,
+                    // but the user is at the end of the list, load the new page.
+                    if (!loading && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                        // Load the next page of the content in the background.
+                        getTrendingWithPage(currentPage + 1);
+                        loading = true;
+                    }
+                }
+            }
+        });
+    }
+
+    private void getTrendingWithPage(int page) {
+        Log.d(TAG, "getTrendingWithPage: " + page);
+        trendingViewModel.getTrending(page).observe(this, new Observer<List<TMDBResponse.Movie>>() {
             @Override
             public void onChanged(List<TMDBResponse.Movie> movies) {
                 Log.d(TAG, "onChanged movies: " + movies.size());
+                int position = 0;
+                if (trendingLayoutManager != null) {
+                    position = trendingLayoutManager.findFirstVisibleItemPosition();
+                }
                 trendingList.addAll(movies);
                 trendingRecyclerViewAdapter.notifyDataSetChanged();
             }

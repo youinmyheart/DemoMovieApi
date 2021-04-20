@@ -18,10 +18,10 @@ import retrofit2.Response;
 public class TrendingRepo {
     private static final String TAG = TrendingRepo.class.getSimpleName();
 
-    public MutableLiveData<List<TMDBResponse.Movie>> getTrending() {
+    public MutableLiveData<List<TMDBResponse.Movie>> getTrending(int page) {
         Log.d(TAG, "getTrending");
         final MutableLiveData<List<TMDBResponse.Movie>> liveData = new MutableLiveData<>();
-        Call<TMDBResponse> call = APIManager.getTrendingMovieWeek(1);
+        Call<TMDBResponse> call = APIManager.getTrendingMovieWeek(page);
         call.enqueue(new Callback<TMDBResponse>() {
             @Override
             public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
