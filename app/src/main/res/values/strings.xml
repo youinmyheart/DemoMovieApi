@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Movie API</string>
     <string name="trending">TRENDING</string>
+    <string name="genre">GENRE</string>
+    <string name="polular">POPULAR</string>
+    <string name="top_rated">TOP RATED</string>
+    <string name="upcoming">UPCOMING</string>
 </resources>

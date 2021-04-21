@@ -15,12 +15,15 @@ import android.view.Window;
 import android.widget.ImageView;
 
 import com.demo.movieapi.R;
+import com.demo.movieapi.adapter.GenreRecyclerViewAdapter;
 import com.demo.movieapi.adapter.TrendingRecyclerViewAdapter;
+import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.GenreResponse;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.model.TMDBResponse;
+import com.demo.movieapi.viewmodel.GenreViewModel;
 import com.demo.movieapi.viewmodel.TrendingViewModel;
 
 import java.util.ArrayList;
@@ -34,12 +37,18 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SwipeRefreshLayout swipeRefreshLayout;
+
     private RecyclerView trendingView;
     private List<TMDBResponse.Movie> trendingList;
     private TrendingRecyclerViewAdapter trendingRecyclerViewAdapter;
     private LinearLayoutManager trendingLayoutManager;
-
     private TrendingViewModel trendingViewModel;
+
+    private RecyclerView genreView;
+    private List<GenreResponse.Genre> genreList;
+    private GenreRecyclerViewAdapter genreRecyclerViewAdapter;
+    private LinearLayoutManager genreLayoutManager;
+    private GenreViewModel genreViewModel;
 
     private int currentPage = 0;
     private boolean loading = true;
@@ -93,9 +102,18 @@ public class MainActivity extends AppCompatActivity {
         trendingView.setLayoutManager(trendingLayoutManager);
 
         trendingList = new ArrayList<>();
-        trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(MainActivity.this, trendingList);
+        trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(this, trendingList);
         trendingView.setAdapter(trendingRecyclerViewAdapter);
         trendingViewModel = new TrendingViewModel();
+
+        genreView = findViewById(R.id.genreList);
+        genreLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        genreView.setLayoutManager(genreLayoutManager);
+
+        genreList = new ArrayList<>();
+        genreRecyclerViewAdapter = new GenreRecyclerViewAdapter(this, genreList);
+        genreView.setAdapter(genreRecyclerViewAdapter);
+        genreViewModel = new GenreViewModel();
     }
 
     private void hideActionBar() {
@@ -121,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "totalItemCount: " + totalItemCount);
                     pastVisibleItems = trendingLayoutManager.findFirstVisibleItemPosition();
                     Log.d(TAG, "pastVisibleItems: " + pastVisibleItems);
+                    Log.d(TAG, "previousTotal: " + previousTotal);
                     if (loading) {
                         if (totalItemCount > previousTotal) {
                             loading = false;
@@ -128,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
                             currentPage++;
                         }
                     }
-
+                    Log.d(TAG, "loading: " + loading);
+                    Log.d(TAG, "currentPage: " + currentPage);
                     // When no new pages are being loaded,
                     // but the user is at the end of the list, load the new page.
                     if (!loading && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
@@ -147,12 +167,24 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
             return;
         }
-        trendingViewModel.getTrending(page).observe(this, new Observer<List<TMDBResponse.Movie>>() {
+        trendingViewModel.getTrending(page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
             @Override
-            public void onChanged(List<TMDBResponse.Movie> movies) {
-                Log.d(TAG, "onChanged movies: " + movies.size());
-                trendingList.addAll(movies);
-                trendingRecyclerViewAdapter.notifyDataSetChanged();
+            public void onChanged(DataWrapper<TMDBResponse> response) {
+                Log.d(TAG, "getTrendingWithPage onChanged");
+                TMDBResponse dataResponse = response.getData();
+                switch (response.getStatus()) {
+                    case SUCCESS:
+                        if (dataResponse != null) {
+                            trendingList.addAll(dataResponse.getMovies());
+                            trendingRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getTrending error: " + response.getMessage());
+                        loading = false; // retry
+                        break;
+                }
+
                 // temporary
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -166,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         loading = true;
         currentPage = 0;
         handleTrending();
+        handleGenre();
 //        swipeRefreshLayout.setRefreshing(false);
     }
 
@@ -192,19 +225,29 @@ public class MainActivity extends AppCompatActivity {
         return mediatorLiveData;
     }
 
-    private void getGenre() {
-        Call<GenreResponse> call = APIManager.getMovieGenre();
-        call.enqueue(new Callback<GenreResponse>() {
+    private void handleGenre() {
+        Log.d(TAG, "handleGenre");
+        genreViewModel.getGenre().observe(this, new Observer<DataWrapper<GenreResponse>>() {
             @Override
-            public void onResponse(Call<GenreResponse> call, Response<GenreResponse> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                GenreResponse res = response.body();
-                Log.d(TAG, "genre id: " + res.getGenres().get(0).getId());
-            }
-
-            @Override
-            public void onFailure(Call<GenreResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
+            public void onChanged(DataWrapper<GenreResponse> genreResponseDataWrapper) {
+                Log.d(TAG, "handleGenre onChanged");
+                GenreResponse response = genreResponseDataWrapper.getData();
+                switch (genreResponseDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            // here if we use: genreList = response.getGenres(),
+                            // recyclerViewAdapter will not be called because list is empty.
+                            // At that time, we must init adapter again and set adapter to recycle view,
+                            // or we set new list (not empty) to adapter
+                            genreList.addAll(response.getGenres());
+                            Log.d(TAG, "genreList size: " + genreList.size());
+                            genreRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getGenre error: " + genreResponseDataWrapper.getMessage());
+                        break;
+                }
             }
         });
     }
