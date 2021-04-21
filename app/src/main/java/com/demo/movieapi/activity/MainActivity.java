@@ -2,9 +2,12 @@ package com.demo.movieapi.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +33,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView trendingView;
     private List<TMDBResponse.Movie> trendingList;
     private TrendingRecyclerViewAdapter trendingRecyclerViewAdapter;
@@ -46,10 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        hideActionBar();
-        setContentView(R.layout.home_activity);
         setUpView();
-        handleTrending();
+//        handleTrending();
 //        getGenre();
 //        getPopular();
 //        getTopRated();
@@ -60,6 +62,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpView() {
+        hideActionBar();
+        setContentView(R.layout.home_activity);
+        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshViews();
+            }
+        });
+        /**
+         * Showing Swipe Refresh animation on activity create
+         * As animation won't start on onCreate, post runnable is used
+         */
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+                refreshViews();
+            }
+        });
+//        swipeRefreshLayout.setColorSchemeResources(R.color.black,
+//                android.R.color.holo_green_dark,
+//                android.R.color.holo_orange_dark,
+//                android.R.color.holo_blue_dark);
         ImageView imvLoadMore = findViewById(R.id.imv_load_more);
 
         trendingView = findViewById(R.id.trendingList);
@@ -117,18 +143,53 @@ public class MainActivity extends AppCompatActivity {
 
     private void getTrendingWithPage(int page) {
         Log.d(TAG, "getTrendingWithPage: " + page);
+        if (page < 1 || page > 1000) {
+            Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
+            return;
+        }
         trendingViewModel.getTrending(page).observe(this, new Observer<List<TMDBResponse.Movie>>() {
             @Override
             public void onChanged(List<TMDBResponse.Movie> movies) {
                 Log.d(TAG, "onChanged movies: " + movies.size());
-                int position = 0;
-                if (trendingLayoutManager != null) {
-                    position = trendingLayoutManager.findFirstVisibleItemPosition();
-                }
                 trendingList.addAll(movies);
                 trendingRecyclerViewAdapter.notifyDataSetChanged();
+                // temporary
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
+    }
+
+    private void refreshViews() {
+        Log.d(TAG, "refreshViews");
+        trendingList.clear();
+        previousTotal = 0;
+        loading = true;
+        currentPage = 0;
+        handleTrending();
+//        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    private MediatorLiveData<Boolean> combineLiveData(LiveData liveData1, LiveData liveData2) {
+        final Object[] object1 = {null};
+        final Object[] object2 = {null};
+        MediatorLiveData<Boolean> mediatorLiveData = new MediatorLiveData<>();
+        mediatorLiveData.addSource(liveData1, new Observer() {
+            @Override
+            public void onChanged(Object o) {
+                object1[0] = o;
+                boolean completed = object1[0] != null && object2[0] != null;
+                mediatorLiveData.setValue(completed);
+            }
+        });
+        mediatorLiveData.addSource(liveData2, new Observer() {
+            @Override
+            public void onChanged(Object o) {
+                object2[0] = o;
+                boolean completed = object1[0] != null && object2[0] != null;
+                mediatorLiveData.setValue(completed);
+            }
+        });
+        return mediatorLiveData;
     }
 
     private void getGenre() {
