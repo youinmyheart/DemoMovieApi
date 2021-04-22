@@ -76,7 +76,10 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
             Log.d(TAG, "widthPixels: " + widthPixels);
             int widthDp = Utils.pxToDp(widthPixels);
             Log.d(TAG, "widthDp: " + widthDp);
-            int spacePx = Utils.dpToPx(36 + 20);
+            // 32 = 16 (left margin) + 16 (right margin)
+            // 36 = 20 (space between items) + 16 (right margin out of screen)
+            // 10 = additional space to see more part of next item
+            int spacePx = Utils.dpToPx(32 + 36 + 10);
             Log.d(TAG, "spacePx: " + spacePx);
             imvTrending.getLayoutParams().width = widthPixels - spacePx;
             imvTrending.requestLayout();

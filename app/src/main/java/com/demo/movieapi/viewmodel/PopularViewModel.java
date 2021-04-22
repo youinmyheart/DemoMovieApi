@@ -5,26 +5,26 @@ import androidx.lifecycle.ViewModel;
 
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.TMDBResponse;
-import com.demo.movieapi.repository.TrendingRepo;
+import com.demo.movieapi.repository.PopularRepo;
 
-public class TrendingViewModel extends ViewModel {
-    private TrendingRepo trendingRepo;
+public class PopularViewModel extends ViewModel {
+    private PopularRepo popularRepo;
     private MutableLiveData<DataWrapper<TMDBResponse>> mutableLiveData;
 
     private int currentPage = 0;
     private boolean loading = true;
     private int previousTotalItems = 0;
 
-    public TrendingViewModel() {
-        trendingRepo = new TrendingRepo();
+    public PopularViewModel() {
+        popularRepo = new PopularRepo();
     }
 
     public MutableLiveData<DataWrapper<TMDBResponse>> getMutableLiveData() {
         return mutableLiveData;
     }
 
-    public MutableLiveData<DataWrapper<TMDBResponse>> getTrending(int page) {
-        mutableLiveData = trendingRepo.getTrending(page);
+    public MutableLiveData<DataWrapper<TMDBResponse>> getPopular(int page) {
+        mutableLiveData = popularRepo.getPopular(page);
         return mutableLiveData;
     }
 

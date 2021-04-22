@@ -75,9 +75,7 @@
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
                     android:layout_marginLeft="16dp"
-                    android:layout_marginStart="16dp"
-                    android:paddingRight="16dp"
-                    android:paddingEnd="16dp"
+                    android:layout_marginRight="16dp"
                     tools:ignore="RtlSymmetry" />
 
                 <RelativeLayout
@@ -108,9 +106,38 @@
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
                     android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    tools:ignore="RtlSymmetry" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/HeaderMargin">
+                    <TextView
+                        android:id="@+id/popular_header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:text="@string/popular"
+                        style="@style/MovieHeader"
+                        android:layout_alignParentStart="true" />
+
+                    <ImageView
+                        android:id="@+id/imv_load_more_popular"
+                        style="@style/IconSize"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        app:srcCompat="@drawable/ic_loadmore"
+                        android:layout_alignParentEnd="true" />
+                </RelativeLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/popularList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:layout_marginLeft="16dp"
                     android:layout_marginStart="16dp"
-                    android:paddingRight="236dp"
-                    android:paddingEnd="236dp"
                     tools:ignore="RtlSymmetry" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

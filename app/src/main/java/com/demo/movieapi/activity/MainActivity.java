@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -14,8 +15,10 @@ import android.util.Log;
 import android.view.Window;
 import android.widget.ImageView;
 
+import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.R;
 import com.demo.movieapi.adapter.GenreRecyclerViewAdapter;
+import com.demo.movieapi.adapter.PopularRecyclerViewAdapter;
 import com.demo.movieapi.adapter.TrendingRecyclerViewAdapter;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.GenreResponse;
@@ -24,6 +27,7 @@ import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.model.TMDBResponse;
 import com.demo.movieapi.viewmodel.GenreViewModel;
+import com.demo.movieapi.viewmodel.PopularViewModel;
 import com.demo.movieapi.viewmodel.TrendingViewModel;
 
 import java.util.ArrayList;
@@ -50,18 +54,17 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager genreLayoutManager;
     private GenreViewModel genreViewModel;
 
-    private int currentPage = 0;
-    private boolean loading = true;
-    private int previousTotal = 0;
-    private int pastVisibleItems, visibleItemCount, totalItemCount;
+    private RecyclerView popularView;
+    private List<TMDBResponse.Movie> popularList;
+    private PopularRecyclerViewAdapter popularRecyclerViewAdapter;
+    private LinearLayoutManager popularLayoutManager;
+    private PopularViewModel popularViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setUpView();
-//        handleTrending();
-//        getGenre();
 //        getPopular();
 //        getTopRated();
 //        getUpcoming();
@@ -100,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         trendingView = findViewById(R.id.trendingList);
         trendingLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         trendingView.setLayoutManager(trendingLayoutManager);
+        trendingView.addItemDecoration(new ItemSpaceDecoration(10));
 
         trendingList = new ArrayList<>();
         trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(this, trendingList);
@@ -109,11 +113,22 @@ public class MainActivity extends AppCompatActivity {
         genreView = findViewById(R.id.genreList);
         genreLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         genreView.setLayoutManager(genreLayoutManager);
+        genreView.addItemDecoration(new ItemSpaceDecoration(10));
 
         genreList = new ArrayList<>();
         genreRecyclerViewAdapter = new GenreRecyclerViewAdapter(this, genreList);
         genreView.setAdapter(genreRecyclerViewAdapter);
         genreViewModel = new GenreViewModel();
+
+        popularView = findViewById(R.id.popularList);
+        popularLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        popularView.setLayoutManager(popularLayoutManager);
+        popularView.addItemDecoration(new ItemSpaceDecoration(10));
+
+        popularList = new ArrayList<>();
+        popularRecyclerViewAdapter = new PopularRecyclerViewAdapter(this, popularList);
+        popularView.setAdapter(popularRecyclerViewAdapter);
+        popularViewModel = new PopularViewModel();
     }
 
     private void hideActionBar() {
@@ -133,28 +148,28 @@ public class MainActivity extends AppCompatActivity {
                 super.onScrolled(recyclerView, dx, dy);
                 if (dx > 0) {
                     // scroll horizontally
-                    visibleItemCount = trendingLayoutManager.getChildCount();
+                    int visibleItemCount = trendingLayoutManager.getChildCount();
                     Log.d(TAG, "visibleItemCount: " + visibleItemCount);
-                    totalItemCount = trendingLayoutManager.getItemCount();
+                    int totalItemCount = trendingLayoutManager.getItemCount();
                     Log.d(TAG, "totalItemCount: " + totalItemCount);
-                    pastVisibleItems = trendingLayoutManager.findFirstVisibleItemPosition();
+                    int pastVisibleItems = trendingLayoutManager.findFirstVisibleItemPosition();
                     Log.d(TAG, "pastVisibleItems: " + pastVisibleItems);
-                    Log.d(TAG, "previousTotal: " + previousTotal);
-                    if (loading) {
-                        if (totalItemCount > previousTotal) {
-                            loading = false;
-                            previousTotal = totalItemCount;
-                            currentPage++;
+                    Log.d(TAG, "previousTotal: " + trendingViewModel.getPreviousTotalItems());
+                    if (trendingViewModel.isLoading()) {
+                        if (totalItemCount > trendingViewModel.getPreviousTotalItems()) {
+                            trendingViewModel.setLoading(false);
+                            trendingViewModel.setPreviousTotalItems(totalItemCount);
+                            trendingViewModel.setCurrentPage(trendingViewModel.getCurrentPage() + 1);
                         }
                     }
-                    Log.d(TAG, "loading: " + loading);
-                    Log.d(TAG, "currentPage: " + currentPage);
+                    Log.d(TAG, "loading: " + trendingViewModel.isLoading());
+                    Log.d(TAG, "currentPage: " + trendingViewModel.getCurrentPage());
                     // When no new pages are being loaded,
                     // but the user is at the end of the list, load the new page.
-                    if (!loading && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                    if (!trendingViewModel.isLoading() && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
                         // Load the next page of the content in the background.
-                        getTrendingWithPage(currentPage + 1);
-                        loading = true;
+                        getTrendingWithPage(trendingViewModel.getCurrentPage() + 1);
+                        trendingViewModel.setLoading(true);
                     }
                 }
             }
@@ -181,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case ERROR:
                         Log.d(TAG, "getTrending error: " + response.getMessage());
-                        loading = false; // retry
+                        trendingViewModel.setLoading(false); // retry
                         break;
                 }
             }
@@ -190,21 +205,41 @@ public class MainActivity extends AppCompatActivity {
 
     private void refreshViews() {
         Log.d(TAG, "refreshViews");
-        previousTotal = 0;
-        loading = true;
-        currentPage = 0;
+        trendingViewModel.setPreviousTotalItems(0);
+        trendingViewModel.setLoading(true);
+        trendingViewModel.setCurrentPage(0);
         trendingList.clear();
         trendingRecyclerViewAdapter.notifyDataSetChanged();
+
         genreList.clear();
         genreRecyclerViewAdapter.notifyDataSetChanged();
+
+        popularViewModel.setPreviousTotalItems(0);
+        popularViewModel.setLoading(true);
+        popularViewModel.setCurrentPage(0);
+        popularList.clear();
+        popularRecyclerViewAdapter.notifyDataSetChanged();
+
         handleTrending();
         handleGenre();
+        handlePopular();
 
         MediatorLiveData<Boolean> mediatorLiveData = combineLiveData(trendingViewModel.getMutableLiveData(), genreViewModel.getMutableLiveData());
         mediatorLiveData.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean completed) {
-                Log.d(TAG, "mediatorLiveData onChanged completed: " + completed);
+                Log.d(TAG, "trending and genre onChanged completed: " + completed);
+                if (completed) {
+//                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        });
+
+        MediatorLiveData<Boolean> mediatorLiveData2 = combineLiveData(mediatorLiveData, popularViewModel.getMutableLiveData());
+        mediatorLiveData2.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean completed) {
+                Log.d(TAG, "mediatorLiveData and popular onChanged completed: " + completed);
                 if (completed) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
@@ -262,19 +297,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getPopular() {
-        Call<TMDBResponse> call = APIManager.getPopularMovie(1);
-        call.enqueue(new Callback<TMDBResponse>() {
+    private void handlePopular() {
+        Log.d(TAG, "handlePopular");
+        getPopularWithPage(1);
+        popularView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                TMDBResponse res = response.body();
-                Log.d(TAG, "movie id: " + res.getMovies().get(0).getId());
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dx > 0) {
+                    // scroll horizontally
+                    int visibleItemCount = popularLayoutManager.getChildCount();
+                    Log.d(TAG, "popular visibleItemCount: " + visibleItemCount);
+                    int totalItemCount = popularLayoutManager.getItemCount();
+                    Log.d(TAG, "popular totalItemCount: " + totalItemCount);
+                    int pastVisibleItems = popularLayoutManager.findFirstVisibleItemPosition();
+                    Log.d(TAG, "popular pastVisibleItems: " + pastVisibleItems);
+                    Log.d(TAG, "popular previousTotal: " + popularViewModel.getPreviousTotalItems());
+                    if (popularViewModel.isLoading()) {
+                        if (totalItemCount > popularViewModel.getPreviousTotalItems()) {
+                            popularViewModel.setLoading(false);
+                            popularViewModel.setPreviousTotalItems(totalItemCount);
+                            popularViewModel.setCurrentPage(popularViewModel.getCurrentPage() + 1);
+                        }
+                    }
+                    Log.d(TAG, "popular loading: " + popularViewModel.isLoading());
+                    Log.d(TAG, "popular currentPage: " + popularViewModel.getCurrentPage());
+                    // When no new pages are being loaded,
+                    // but the user is at the end of the list, load the new page.
+                    if (!popularViewModel.isLoading() && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                        // Load the next page of the content in the background.
+                        getPopularWithPage(popularViewModel.getCurrentPage() + 1);
+                        popularViewModel.setLoading(true);
+                    }
+                }
             }
+        });
+    }
 
+    private void getPopularWithPage(int page) {
+        popularViewModel.getPopular(page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
             @Override
-            public void onFailure(Call<TMDBResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
+            public void onChanged(DataWrapper<TMDBResponse> tmdbResponseDataWrapper) {
+                TMDBResponse response = tmdbResponseDataWrapper.getData();
+                switch (tmdbResponseDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            popularList.addAll(response.getMovies());
+                            Log.d(TAG, "popularList size: " + popularList.size());
+                            popularRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getPopular error: " + tmdbResponseDataWrapper.getMessage());
+                        popularViewModel.setLoading(false); // retry
+                        break;
+                }
             }
         });
     }

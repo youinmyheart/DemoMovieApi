@@ -23,7 +23,6 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
     private static final String TAG = GenreRecyclerViewAdapter.class.getSimpleName();
     private Context context;
     private List<GenreResponse.Genre> genreList;
-    private int count = 0;
 
     public GenreRecyclerViewAdapter(Context context, List<GenreResponse.Genre> genreList) {
         this.context = context;
