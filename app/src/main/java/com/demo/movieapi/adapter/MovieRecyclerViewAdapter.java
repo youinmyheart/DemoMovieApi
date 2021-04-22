@@ -19,14 +19,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class PopularRecyclerViewAdapter extends RecyclerView.Adapter<PopularRecyclerViewAdapter.PopularViewHolder> {
-    private static final String TAG = PopularRecyclerViewAdapter.class.getSimpleName();
+public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecyclerViewAdapter.PopularViewHolder> {
+    private static final String TAG = MovieRecyclerViewAdapter.class.getSimpleName();
     private Context context;
-    private List<TMDBResponse.Movie> popularList;
+    private List<TMDBResponse.Movie> movieList;
 
-    public PopularRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> popularList) {
+    public MovieRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> movieList) {
         this.context = context;
-        this.popularList = popularList;
+        this.movieList = movieList;
     }
 
     @NonNull
@@ -39,7 +39,7 @@ public class PopularRecyclerViewAdapter extends RecyclerView.Adapter<PopularRecy
     @Override
     public void onBindViewHolder(@NonNull PopularViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder position: " + position);
-        TMDBResponse.Movie movie = popularList.get(position);
+        TMDBResponse.Movie movie = movieList.get(position);
         String imagePath = APIManager.IMAGE_BASE_URL + "/w300" + movie.getPosterPath();
         Picasso picasso = Picasso.with(context);
         picasso.setLoggingEnabled(true);
@@ -59,7 +59,7 @@ public class PopularRecyclerViewAdapter extends RecyclerView.Adapter<PopularRecy
 
     @Override
     public int getItemCount() {
-        return popularList.size();
+        return movieList.size();
     }
 
     public class PopularViewHolder extends RecyclerView.ViewHolder {
