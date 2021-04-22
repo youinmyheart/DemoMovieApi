@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.R;
+import com.demo.movieapi.Utils;
 import com.demo.movieapi.adapter.GenreRecyclerViewAdapter;
 import com.demo.movieapi.adapter.MovieRecyclerViewAdapter;
 import com.demo.movieapi.adapter.TrendingRecyclerViewAdapter;
@@ -29,6 +30,7 @@ import com.demo.movieapi.viewmodel.GenreViewModel;
 import com.demo.movieapi.viewmodel.PopularViewModel;
 import com.demo.movieapi.viewmodel.TopRatedViewModel;
 import com.demo.movieapi.viewmodel.TrendingViewModel;
+import com.demo.movieapi.viewmodel.UpcomingViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +68,17 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager topRatedLayoutManager;
     private TopRatedViewModel topRatedViewModel;
 
+    private RecyclerView upcomingView;
+    private List<TMDBResponse.Movie> upcomingList;
+    private MovieRecyclerViewAdapter upcomingRecyclerViewAdapter;
+    private LinearLayoutManager upcomingLayoutManager;
+    private UpcomingViewModel upcomingViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setUpView();
-//        getPopular();
-//        getTopRated();
-//        getUpcoming();
 //        getMovieDetail();
 //        getMovieReview();
 //        getMovieRecommendations();
@@ -145,6 +150,16 @@ public class MainActivity extends AppCompatActivity {
         topRatedRecyclerViewAdapter = new MovieRecyclerViewAdapter(this, topRatedList);
         topRatedView.setAdapter(topRatedRecyclerViewAdapter);
         topRatedViewModel = new TopRatedViewModel();
+
+        upcomingView = findViewById(R.id.upcomingList);
+        upcomingLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        upcomingView.setLayoutManager(upcomingLayoutManager);
+        upcomingView.addItemDecoration(new ItemSpaceDecoration(10));
+
+        upcomingList = new ArrayList<>();
+        upcomingRecyclerViewAdapter = new MovieRecyclerViewAdapter(this, upcomingList);
+        upcomingView.setAdapter(upcomingRecyclerViewAdapter);
+        upcomingViewModel = new UpcomingViewModel();
     }
 
     private void hideActionBar() {
@@ -242,12 +257,19 @@ public class MainActivity extends AppCompatActivity {
         topRatedList.clear();
         topRatedRecyclerViewAdapter.notifyDataSetChanged();
 
+        upcomingViewModel.setPreviousTotalItems(0);
+        upcomingViewModel.setLoading(true);
+        upcomingViewModel.setCurrentPage(0);
+        upcomingList.clear();
+        upcomingRecyclerViewAdapter.notifyDataSetChanged();
+
         handleTrending();
         handleGenre();
         handlePopular();
         handleTopRated();
+        handleUpcoming();
 
-        MediatorLiveData<Boolean> mediatorLiveData1 = combineLiveData(trendingViewModel.getMutableLiveData(), genreViewModel.getMutableLiveData());
+        MediatorLiveData<Boolean> mediatorLiveData1 = Utils.combineLiveData(trendingViewModel.getMutableLiveData(), genreViewModel.getMutableLiveData());
         mediatorLiveData1.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean completed) {
@@ -255,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        MediatorLiveData<Boolean> mediatorLiveData2 = combineLiveData(mediatorLiveData1, popularViewModel.getMutableLiveData());
+        MediatorLiveData<Boolean> mediatorLiveData2 = Utils.combineLiveData(mediatorLiveData1, popularViewModel.getMutableLiveData());
         mediatorLiveData2.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean completed) {
@@ -263,39 +285,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        MediatorLiveData<Boolean> mediatorLiveData3 = combineLiveData(mediatorLiveData2, topRatedViewModel.getMutableLiveData());
+        MediatorLiveData<Boolean> mediatorLiveData3 = Utils.combineLiveData(mediatorLiveData2, topRatedViewModel.getMutableLiveData());
         mediatorLiveData3.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean completed) {
                 Log.d(TAG, "mediatorLiveData2 and topRated onChanged completed: " + completed);
+            }
+        });
+
+        MediatorLiveData<Boolean> mediatorLiveData4 = Utils.combineLiveData(mediatorLiveData3, upcomingViewModel.getMutableLiveData());
+        mediatorLiveData4.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean completed) {
+                Log.d(TAG, "mediatorLiveData3 and upcoming onChanged completed: " + completed);
                 if (completed) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
             }
         });
-    }
-
-    private MediatorLiveData<Boolean> combineLiveData(LiveData liveData1, LiveData liveData2) {
-        final Object[] object1 = {null};
-        final Object[] object2 = {null};
-        MediatorLiveData<Boolean> mediatorLiveData = new MediatorLiveData<>();
-        mediatorLiveData.addSource(liveData1, new Observer() {
-            @Override
-            public void onChanged(Object o) {
-                object1[0] = o;
-                boolean completed = object1[0] != null && object2[0] != null;
-                mediatorLiveData.setValue(completed);
-            }
-        });
-        mediatorLiveData.addSource(liveData2, new Observer() {
-            @Override
-            public void onChanged(Object o) {
-                object2[0] = o;
-                boolean completed = object1[0] != null && object2[0] != null;
-                mediatorLiveData.setValue(completed);
-            }
-        });
-        return mediatorLiveData;
     }
 
     private void handleGenre() {
@@ -363,6 +370,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getPopularWithPage(int page) {
+        if (page < 1 || page > 1000) {
+            Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
+            return;
+        }
         popularViewModel.getPopular(page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
             @Override
             public void onChanged(DataWrapper<TMDBResponse> tmdbResponseDataWrapper) {
@@ -421,6 +432,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getTopRatedWithPage(int page) {
+        if (page < 1 || page > 1000) {
+            Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
+            return;
+        }
         topRatedViewModel.getTopRated(page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
             @Override
             public void onChanged(DataWrapper<TMDBResponse> tmdbResponseDataWrapper) {
@@ -442,19 +457,64 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getUpcoming() {
-        Call<TMDBResponse> call = APIManager.getUpcomingMovie(1);
-        call.enqueue(new Callback<TMDBResponse>() {
+    private void handleUpcoming() {
+        getUpcomingWithPage(1);
+        upcomingView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                TMDBResponse res = response.body();
-                Log.d(TAG, "movie id: " + res.getMovies().get(0).getId());
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dx > 0) {
+                    // scroll horizontally
+                    int visibleItemCount = upcomingLayoutManager.getChildCount();
+                    Log.d(TAG, "upcoming visibleItemCount: " + visibleItemCount);
+                    int totalItemCount = upcomingLayoutManager.getItemCount();
+                    Log.d(TAG, "upcoming totalItemCount: " + totalItemCount);
+                    int pastVisibleItems = upcomingLayoutManager.findFirstVisibleItemPosition();
+                    Log.d(TAG, "upcoming pastVisibleItems: " + pastVisibleItems);
+                    Log.d(TAG, "upcoming previousTotal: " + upcomingViewModel.getPreviousTotalItems());
+                    if (upcomingViewModel.isLoading()) {
+                        if (totalItemCount > upcomingViewModel.getPreviousTotalItems()) {
+                            upcomingViewModel.setLoading(false);
+                            upcomingViewModel.setPreviousTotalItems(totalItemCount);
+                            upcomingViewModel.setCurrentPage(upcomingViewModel.getCurrentPage() + 1);
+                        }
+                    }
+                    Log.d(TAG, "upcoming loading: " + upcomingViewModel.isLoading());
+                    Log.d(TAG, "upcoming currentPage: " + upcomingViewModel.getCurrentPage());
+                    // When no new pages are being loaded,
+                    // but the user is at the end of the list, load the new page.
+                    if (!upcomingViewModel.isLoading() && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                        // Load the next page of the content in the background.
+                        getUpcomingWithPage(upcomingViewModel.getCurrentPage() + 1);
+                        upcomingViewModel.setLoading(true);
+                    }
+                }
             }
+        });
+    }
 
+    private void getUpcomingWithPage(int page) {
+        if (page < 1 || page > 1000) {
+            Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
+            return;
+        }
+        upcomingViewModel.getUpcoming(page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
             @Override
-            public void onFailure(Call<TMDBResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
+            public void onChanged(DataWrapper<TMDBResponse> tmdbResponseDataWrapper) {
+                TMDBResponse response = tmdbResponseDataWrapper.getData();
+                switch (tmdbResponseDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            upcomingList.addAll(response.getMovies());
+                            Log.d(TAG, "upcomingList size: " + upcomingList.size());
+                            upcomingRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getUpcoming error: " + tmdbResponseDataWrapper.getMessage());
+                        upcomingViewModel.setLoading(false); // retry
+                        break;
+                }
             }
         });
     }
