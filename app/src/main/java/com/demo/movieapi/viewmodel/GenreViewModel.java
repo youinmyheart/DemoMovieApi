@@ -19,4 +19,8 @@ public class GenreViewModel {
         mutableLiveData = genreRepo.getGenre();
         return mutableLiveData;
     }
+
+    public MutableLiveData<DataWrapper<GenreResponse>> getMutableLiveData() {
+        return mutableLiveData;
+    }
 }

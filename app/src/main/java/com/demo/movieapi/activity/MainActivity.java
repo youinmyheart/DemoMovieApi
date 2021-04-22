@@ -184,22 +184,32 @@ public class MainActivity extends AppCompatActivity {
                         loading = false; // retry
                         break;
                 }
-
-                // temporary
-                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
 
     private void refreshViews() {
         Log.d(TAG, "refreshViews");
-        trendingList.clear();
         previousTotal = 0;
         loading = true;
         currentPage = 0;
+        trendingList.clear();
+        trendingRecyclerViewAdapter.notifyDataSetChanged();
+        genreList.clear();
+        genreRecyclerViewAdapter.notifyDataSetChanged();
         handleTrending();
         handleGenre();
-//        swipeRefreshLayout.setRefreshing(false);
+
+        MediatorLiveData<Boolean> mediatorLiveData = combineLiveData(trendingViewModel.getMutableLiveData(), genreViewModel.getMutableLiveData());
+        mediatorLiveData.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean completed) {
+                Log.d(TAG, "mediatorLiveData onChanged completed: " + completed);
+                if (completed) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        });
     }
 
     private MediatorLiveData<Boolean> combineLiveData(LiveData liveData1, LiveData liveData2) {
