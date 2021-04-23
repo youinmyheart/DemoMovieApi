@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
 import com.demo.movieapi.Utils;
 import com.demo.movieapi.model.TMDBResponse;
@@ -26,10 +27,15 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
     private static final String TAG = TrendingRecyclerViewAdapter.class.getSimpleName();
     private Context context;
     private List<TMDBResponse.Movie> trendingList;
+    private OnClickViewHolderItemListener listener;
 
     public TrendingRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> trendingList) {
         this.context = context;
         this.trendingList = trendingList;
+    }
+
+    public void setOnClickItemListener(OnClickViewHolderItemListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -56,6 +62,15 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
                 Log.d(TAG, "onError");
             }
         });
+
+        holder.imvTrending.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(holder, position);
+                }
+            }
+        });
     }
 
     @Override
@@ -63,7 +78,7 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
         return trendingList.size();
     }
 
-    public class TrendingViewHolder extends RecyclerView.ViewHolder {
+    public static class TrendingViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
         ImageView imvTrending;

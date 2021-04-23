@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
 import com.demo.movieapi.model.TMDBResponse;
 import com.demo.movieapi.repository.APIManager;
@@ -23,10 +24,15 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
     private static final String TAG = MovieRecyclerViewAdapter.class.getSimpleName();
     private Context context;
     private List<TMDBResponse.Movie> movieList;
+    private OnClickViewHolderItemListener listener;
 
     public MovieRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> movieList) {
         this.context = context;
         this.movieList = movieList;
+    }
+
+    public void setOnClickItemListener(OnClickViewHolderItemListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -55,6 +61,15 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
             }
         });
         holder.tvTitle.setText(movie.getTitle());
+
+        holder.imvMovie.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(holder, position);
+                }
+            }
+        });
     }
 
     @Override

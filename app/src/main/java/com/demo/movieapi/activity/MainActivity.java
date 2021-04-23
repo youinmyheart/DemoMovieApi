@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ImageView;
 
+import com.demo.movieapi.Constants;
 import com.demo.movieapi.ItemSpaceDecoration;
+import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
 import com.demo.movieapi.Utils;
 import com.demo.movieapi.adapter.GenreRecyclerViewAdapter;
@@ -118,6 +121,13 @@ public class MainActivity extends AppCompatActivity {
 
         trendingList = new ArrayList<>();
         trendingRecyclerViewAdapter = new TrendingRecyclerViewAdapter(this, trendingList);
+        trendingRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "trending onItemClick position: " + position);
+                goToMovieDetailActivity(trendingList.get(position).getId());
+            }
+        });
         trendingView.setAdapter(trendingRecyclerViewAdapter);
         trendingViewModel = new TrendingViewModel();
 
@@ -128,6 +138,12 @@ public class MainActivity extends AppCompatActivity {
 
         genreList = new ArrayList<>();
         genreRecyclerViewAdapter = new GenreRecyclerViewAdapter(this, genreList);
+        genreRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "genre onItemClick position: " + position);
+            }
+        });
         genreView.setAdapter(genreRecyclerViewAdapter);
         genreViewModel = new GenreViewModel();
 
@@ -138,6 +154,12 @@ public class MainActivity extends AppCompatActivity {
 
         popularList = new ArrayList<>();
         popularRecyclerViewAdapter = new MovieRecyclerViewAdapter(this, popularList);
+        popularRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "popular onItemClick position: " + position);
+            }
+        });
         popularView.setAdapter(popularRecyclerViewAdapter);
         popularViewModel = new PopularViewModel();
 
@@ -148,6 +170,12 @@ public class MainActivity extends AppCompatActivity {
 
         topRatedList = new ArrayList<>();
         topRatedRecyclerViewAdapter = new MovieRecyclerViewAdapter(this, topRatedList);
+        topRatedRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "topRated onItemClick position: " + position);
+            }
+        });
         topRatedView.setAdapter(topRatedRecyclerViewAdapter);
         topRatedViewModel = new TopRatedViewModel();
 
@@ -158,8 +186,20 @@ public class MainActivity extends AppCompatActivity {
 
         upcomingList = new ArrayList<>();
         upcomingRecyclerViewAdapter = new MovieRecyclerViewAdapter(this, upcomingList);
+        upcomingRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "upcoming onItemClick position: " + position);
+            }
+        });
         upcomingView.setAdapter(upcomingRecyclerViewAdapter);
         upcomingViewModel = new UpcomingViewModel();
+    }
+
+    private void goToMovieDetailActivity(int movieId) {
+        Intent intent = new Intent(this, MovieDetailActivity.class);
+        intent.putExtra(Constants.MOVIE_ID_KEY, movieId);
+        startActivity(intent);
     }
 
     private void hideActionBar() {

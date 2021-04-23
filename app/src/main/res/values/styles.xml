@@ -18,4 +18,22 @@
         <item name="android:layout_width">22dp</item>
         <item name="android:layout_height">22dp</item>
     </style>
+
+    <style name="MoviePointText">
+        <item name="fontFamily">helvetica</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#F1CA23</item>
+    </style>
+
+    <style name="MovieDateText">
+        <item name="fontFamily">helvetica</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#3E4A59</item>
+    </style>
+
+    <style name="MovieGenreText">
+        <item name="fontFamily">helvetica</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
 </resources>

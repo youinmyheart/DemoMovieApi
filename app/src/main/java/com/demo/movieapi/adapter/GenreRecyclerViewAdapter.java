@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
 import com.demo.movieapi.model.GenreResponse;
 
@@ -23,10 +24,15 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
     private static final String TAG = GenreRecyclerViewAdapter.class.getSimpleName();
     private Context context;
     private List<GenreResponse.Genre> genreList;
+    private OnClickViewHolderItemListener listener;
 
     public GenreRecyclerViewAdapter(Context context, List<GenreResponse.Genre> genreList) {
         this.context = context;
         this.genreList = genreList;
+    }
+
+    public void setOnClickItemListener(OnClickViewHolderItemListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -44,6 +50,14 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
 
         List<GradientDrawable> drawableList = getListGradientDrawable();
         holder.container.setBackground(drawableList.get(position % 3));
+        holder.container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(holder, position);
+                }
+            }
+        });
     }
 
     @Override
