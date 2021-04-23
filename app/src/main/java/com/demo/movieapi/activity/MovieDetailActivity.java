@@ -2,8 +2,10 @@ package com.demo.movieapi.activity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +16,9 @@ import com.demo.movieapi.R;
 public class MovieDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
+
+    private ImageView imvBack;
+
     private int movieId;
 
     @Override
@@ -34,6 +39,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.movie_detail_activity);
+        imvBack = findViewById(R.id.imv_back);
+        imvBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
         movieId = getIntent().getExtras().getInt(Constants.MOVIE_ID_KEY, -1);
         Log.d(TAG, "movieId: " + movieId);
     }

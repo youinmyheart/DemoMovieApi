@@ -10,4 +10,7 @@
 
     <color name="movie_header">#3E4A59</color>
     <color name="genre_background">#007AD9</color>
+    <color name="favorite_background">#BACDE7</color>
+    <color name="your_rate_bg">#F8F8F8</color>
+    <color name="button_comment_bg">#007AD9</color>
 </resources>

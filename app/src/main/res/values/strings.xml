@@ -5,4 +5,12 @@
     <string name="popular">POPULAR</string>
     <string name="top_rated">TOP RATED</string>
     <string name="upcoming">UPCOMING</string>
+    <string name="favorite">Favorite</string>
+    <string name="read_more">Read more</string>
+    <string name="your_rate">Your Rate</string>
+    <string name="write_comment">WRITE A COMMENT</string>
+    <string name="series_cast">Series Cast</string>
+    <string name="video">Video</string>
+    <string name="comments">Comments</string>
+    <string name="recommendations">Recommendations</string>
 </resources>
