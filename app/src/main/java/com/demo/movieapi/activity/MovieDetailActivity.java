@@ -1,25 +1,74 @@
 package com.demo.movieapi.activity;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.Constants;
 import com.demo.movieapi.R;
+import com.demo.movieapi.model.DataWrapper;
+import com.demo.movieapi.model.MovieDetail;
+import com.demo.movieapi.repository.APIManager;
+import com.demo.movieapi.viewmodel.MovieDetailViewModel;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
 
     private ImageView imvBack;
+    private ImageView imvBackdrop;
+    private ImageView imvPlayBackdrop;
+    private ImageView imvPoster;
+    private TextView tvMoviePoint;
+    private LinearLayout containerStar;
+    private ImageView imvStar1;
+    private ImageView imvStar2;
+    private ImageView imvStar3;
+    private ImageView imvStar4;
+    private ImageView imvStar5;
+    private TextView tvMovieDate;
+    private CardView cardGenre1;
+    private TextView tvGenre1;
+    private CardView cardGenre2;
+    private TextView tvGenre2;
+    private TextView tvMovieTitle;
+    private TextView tvOverview;
+    private TextView tvReadMore;
+    private TextView tvFavorite;
+    private LinearLayout containerRateStar;
+    private ImageView imvRateStar1;
+    private ImageView imvRateStar2;
+    private ImageView imvRateStar3;
+    private ImageView imvRateStar4;
+    private ImageView imvRateStar5;
+    private TextView tvNumberStar;
+    private RecyclerView seriesCastView;
+    private RecyclerView videoView;
+    private ImageView imvLoadMoreComments;
+    private RecyclerView commentsView;
+    private ImageView imvLoadMoreRecommendations;
+    private RecyclerView recommendationsView;
 
     private int movieId;
+    private MovieDetailViewModel movieDetailViewModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,8 +96,42 @@ public class MovieDetailActivity extends AppCompatActivity {
             }
         });
 
+        imvBackdrop = findViewById(R.id.imvBackdrop);
+        imvPlayBackdrop = findViewById(R.id.imvPlayBackdrop);
+        imvPoster = findViewById(R.id.imvPoster);
+        tvMoviePoint = findViewById(R.id.tv_movie_point);
+        containerStar = findViewById(R.id.container_star);
+        imvStar1 = findViewById(R.id.imv_star_1);
+        imvStar2 = findViewById(R.id.imv_star_2);
+        imvStar3 = findViewById(R.id.imv_star_3);
+        imvStar4 = findViewById(R.id.imv_star_4);
+        imvStar5 = findViewById(R.id.imv_star_5);
+        tvMovieDate = findViewById(R.id.tv_movie_date);
+        cardGenre1 = findViewById(R.id.card_genre_1);
+        tvGenre1 = findViewById(R.id.tv_genre_1);
+        cardGenre2 = findViewById(R.id.card_genre_2);
+        tvGenre2 = findViewById(R.id.tv_genre_2);
+        tvMovieTitle = findViewById(R.id.tv_movie_title);
+        tvOverview = findViewById(R.id.tv_movie_overview);
+        tvReadMore = findViewById(R.id.tv_read_more);
+        containerRateStar = findViewById(R.id.container_rate_star);
+        imvRateStar1 = findViewById(R.id.rate_star_1);
+        imvRateStar2 = findViewById(R.id.rate_star_2);
+        imvRateStar3 = findViewById(R.id.rate_star_3);
+        imvRateStar4 = findViewById(R.id.rate_star_4);
+        imvRateStar5 = findViewById(R.id.rate_star_5);
+        seriesCastView = findViewById(R.id.series_cast_list);
+        videoView = findViewById(R.id.video_list);
+        imvLoadMoreComments = findViewById(R.id.imv_load_more_comments);
+        commentsView = findViewById(R.id.comments_list);
+        imvLoadMoreRecommendations = findViewById(R.id.imv_load_more_recommendations);
+        recommendationsView = findViewById(R.id.recommendations_list);
+
         movieId = getIntent().getExtras().getInt(Constants.MOVIE_ID_KEY, -1);
         Log.d(TAG, "movieId: " + movieId);
+
+        movieDetailViewModel = new MovieDetailViewModel();
+        getMovieDetail(movieId);
     }
 
     private void hideActionBar() {
@@ -57,5 +140,78 @@ public class MovieDetailActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+    }
+
+    private void loadImage(ImageView imv, String imagePath, Callback callback) {
+        Picasso picasso = Picasso.with(this);
+        picasso.setLoggingEnabled(true);
+        picasso.load(imagePath).into(imv, callback);
+    }
+
+    private void getMovieDetail(int movieId) {
+        imvPlayBackdrop.setVisibility(View.INVISIBLE);
+        cardGenre1.setVisibility(View.INVISIBLE);
+        cardGenre2.setVisibility(View.INVISIBLE);
+        movieDetailViewModel.getMovieDetail(movieId).observe(this, new Observer<DataWrapper<MovieDetail>>() {
+            @Override
+            public void onChanged(DataWrapper<MovieDetail> movieDetailDataWrapper) {
+                MovieDetail data = movieDetailDataWrapper.getData();
+                switch (movieDetailDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (data != null) {
+                            handleMovieDetailData(data);
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getMovieDetail error: " + movieDetailDataWrapper.getMessage());
+                        break;
+                }
+            }
+        });
+    }
+
+    private void handleMovieDetailData(MovieDetail data) {
+        String backdropPath = APIManager.IMAGE_BASE_URL + "/w400" + data.getBackdropPath();
+        loadImage(imvBackdrop, backdropPath, new Callback() {
+            @Override
+            public void onSuccess() {
+                imvPlayBackdrop.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onError() {
+                Log.d(TAG, "onError imvBackdrop");
+            }
+        });
+
+        String posterPath = APIManager.IMAGE_BASE_URL + "/w154" + data.getPosterPath();
+        loadImage(imvPoster, posterPath, new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onError() {
+                Log.d(TAG, "onError imvPoster");
+            }
+        });
+
+        tvMovieTitle.setText(data.getTitle());
+        tvOverview.setText(data.getOverview());
+        tvMoviePoint.setText(movieDetailViewModel.getRating());
+
+        String genre1 = movieDetailViewModel.getGenre1();
+        String genre2 = movieDetailViewModel.getGenre2();
+        if (!TextUtils.isEmpty(genre1)) {
+            cardGenre1.setVisibility(View.VISIBLE);
+            tvGenre1.setText(genre1);
+        }
+        if (!TextUtils.isEmpty(genre2)) {
+            cardGenre2.setVisibility(View.VISIBLE);
+            tvGenre2.setText(genre2);
+        }
+
+        tvMovieDate.setText(movieDetailViewModel.getMovieDate());
     }
 }

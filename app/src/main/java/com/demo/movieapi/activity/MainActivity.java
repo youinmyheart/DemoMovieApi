@@ -559,23 +559,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getMovieDetail() {
-        Call<MovieDetail> call = APIManager.getMovieDetailWithVideo(399566);
-        call.enqueue(new Callback<MovieDetail>() {
-            @Override
-            public void onResponse(Call<MovieDetail> call, Response<MovieDetail> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                MovieDetail res = response.body();
-                Log.d(TAG, "movie ImdbId: " + res.getImdbId());
-            }
-
-            @Override
-            public void onFailure(Call<MovieDetail> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
-            }
-        });
-    }
-
     private void getMovieReview() {
         Call<MovieReview> call = APIManager.getMovieReview(399566, 1);
         call.enqueue(new Callback<MovieReview>() {
