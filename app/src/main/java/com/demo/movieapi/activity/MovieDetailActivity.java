@@ -14,20 +14,24 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.Constants;
+import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.R;
+import com.demo.movieapi.adapter.CastRecyclerViewAdapter;
+import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.repository.APIManager;
+import com.demo.movieapi.viewmodel.CastViewModel;
 import com.demo.movieapi.viewmodel.MovieDetailViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
@@ -60,7 +64,13 @@ public class MovieDetailActivity extends AppCompatActivity {
     private ImageView imvRateStar4;
     private ImageView imvRateStar5;
     private TextView tvNumberStar;
+
     private RecyclerView seriesCastView;
+    private List<CastCrew.Cast> castList;
+    private CastRecyclerViewAdapter castRecyclerViewAdapter;
+    private LinearLayoutManager castLayoutManager;
+    private CastViewModel castViewModel;
+
     private RecyclerView videoView;
     private ImageView imvLoadMoreComments;
     private RecyclerView commentsView;
@@ -120,7 +130,17 @@ public class MovieDetailActivity extends AppCompatActivity {
         imvRateStar3 = findViewById(R.id.rate_star_3);
         imvRateStar4 = findViewById(R.id.rate_star_4);
         imvRateStar5 = findViewById(R.id.rate_star_5);
+
         seriesCastView = findViewById(R.id.series_cast_list);
+        castLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        seriesCastView.setLayoutManager(castLayoutManager);
+        seriesCastView.addItemDecoration(new ItemSpaceDecoration(5));
+
+        castList = new ArrayList<>();
+        castRecyclerViewAdapter = new CastRecyclerViewAdapter(this, castList);
+        seriesCastView.setAdapter(castRecyclerViewAdapter);
+        castViewModel = new CastViewModel();
+
         videoView = findViewById(R.id.video_list);
         imvLoadMoreComments = findViewById(R.id.imv_load_more_comments);
         commentsView = findViewById(R.id.comments_list);
@@ -132,6 +152,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         movieDetailViewModel = new MovieDetailViewModel();
         getMovieDetail(movieId);
+        handleSeriesCast();
     }
 
     private void hideActionBar() {
@@ -213,5 +234,26 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
 
         tvMovieDate.setText(movieDetailViewModel.getMovieDate());
+    }
+
+    private void handleSeriesCast() {
+        castViewModel.getMovieCast(movieId).observe(this, new Observer<DataWrapper<CastCrew>>() {
+            @Override
+            public void onChanged(DataWrapper<CastCrew> castCrewDataWrapper) {
+                CastCrew response = castCrewDataWrapper.getData();
+                switch (castCrewDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            castList.addAll(response.getCasts());
+                            Log.d(TAG, "castList size: " + castList.size());
+                            castRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getUpcoming error: " + castCrewDataWrapper.getMessage());
+                        break;
+                }
+            }
+        });
     }
 }

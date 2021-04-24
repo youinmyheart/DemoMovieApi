@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
                 Log.d(TAG, "popular onItemClick position: " + position);
+                goToMovieDetailActivity(popularList.get(position).getId());
             }
         });
         popularView.setAdapter(popularRecyclerViewAdapter);
@@ -174,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
                 Log.d(TAG, "topRated onItemClick position: " + position);
+                goToMovieDetailActivity(topRatedList.get(position).getId());
             }
         });
         topRatedView.setAdapter(topRatedRecyclerViewAdapter);
@@ -190,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
                 Log.d(TAG, "upcoming onItemClick position: " + position);
+                goToMovieDetailActivity(upcomingList.get(position).getId());
             }
         });
         upcomingView.setAdapter(upcomingRecyclerViewAdapter);
@@ -555,40 +558,6 @@ public class MainActivity extends AppCompatActivity {
                         upcomingViewModel.setLoading(false); // retry
                         break;
                 }
-            }
-        });
-    }
-
-    private void getMovieReview() {
-        Call<MovieReview> call = APIManager.getMovieReview(399566, 1);
-        call.enqueue(new Callback<MovieReview>() {
-            @Override
-            public void onResponse(Call<MovieReview> call, Response<MovieReview> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                MovieReview res = response.body();
-                Log.d(TAG, "movieId: " + res.getMovieId());
-            }
-
-            @Override
-            public void onFailure(Call<MovieReview> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
-            }
-        });
-    }
-
-    private void getMovieRecommendations() {
-        Call<TMDBResponse> call = APIManager.getMovieRecommendations(399566, 1);
-        call.enqueue(new Callback<TMDBResponse>() {
-            @Override
-            public void onResponse(Call<TMDBResponse> call, Response<TMDBResponse> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-                TMDBResponse res = response.body();
-                Log.d(TAG, "getMovies size: " + res.getMovies().size());
-            }
-
-            @Override
-            public void onFailure(Call<TMDBResponse> call, Throwable t) {
-                Log.e(TAG, "onFailure:" + t.getMessage());
             }
         });
     }

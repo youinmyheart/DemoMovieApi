@@ -9,6 +9,8 @@ public class CastCrew {
     private int movieId;
     @SerializedName("cast")
     private List<Cast> casts;
+    @SerializedName("crew")
+    private List<Cast> crews;
 
     public int getMovieId() {
         return movieId;
@@ -24,6 +26,14 @@ public class CastCrew {
 
     public void setCasts(List<Cast> casts) {
         this.casts = casts;
+    }
+
+    public List<Cast> getCrews() {
+        return crews;
+    }
+
+    public void setCrews(List<Cast> crews) {
+        this.crews = crews;
     }
 
     public class Cast {
@@ -51,10 +61,6 @@ public class CastCrew {
         private String creditId;
         @SerializedName("order")
         private int order;
-        @SerializedName("department")
-        private String department;
-        @SerializedName("job")
-        private String job;
 
         public boolean isAdult() {
             return isAdult;
@@ -150,6 +156,103 @@ public class CastCrew {
 
         public void setOrder(int order) {
             this.order = order;
+        }
+    }
+
+    public class Crew {
+        @SerializedName("adult")
+        private boolean isAdult;
+        @SerializedName("gender")
+        private int gender;
+        @SerializedName("id")
+        private int id;
+        @SerializedName("known_for_department")
+        private String knownForDepartment;
+        @SerializedName("name")
+        private String name;
+        @SerializedName("original_name")
+        private String originalName;
+        @SerializedName("popularity")
+        private float popularity;
+        @SerializedName("profile_path")
+        private String profilePath;
+        @SerializedName("credit_id")
+        private String creditId;
+        @SerializedName("department")
+        private String department;
+        @SerializedName("job")
+        private String job;
+
+        public boolean isAdult() {
+            return isAdult;
+        }
+
+        public void setAdult(boolean adult) {
+            isAdult = adult;
+        }
+
+        public int getGender() {
+            return gender;
+        }
+
+        public void setGender(int gender) {
+            this.gender = gender;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getKnownForDepartment() {
+            return knownForDepartment;
+        }
+
+        public void setKnownForDepartment(String knownForDepartment) {
+            this.knownForDepartment = knownForDepartment;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getOriginalName() {
+            return originalName;
+        }
+
+        public void setOriginalName(String originalName) {
+            this.originalName = originalName;
+        }
+
+        public float getPopularity() {
+            return popularity;
+        }
+
+        public void setPopularity(float popularity) {
+            this.popularity = popularity;
+        }
+
+        public String getProfilePath() {
+            return profilePath;
+        }
+
+        public void setProfilePath(String profilePath) {
+            this.profilePath = profilePath;
+        }
+
+        public String getCreditId() {
+            return creditId;
+        }
+
+        public void setCreditId(String creditId) {
+            this.creditId = creditId;
         }
 
         public String getDepartment() {

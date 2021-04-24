@@ -1,6 +1,7 @@
 package com.demo.movieapi.repository;
 
 import com.demo.movieapi.Constants;
+import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.GenreResponse;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.model.MovieReview;
@@ -83,5 +84,10 @@ public class APIManager {
     public static Call<TMDBResponse> getMovieRecommendations(int movieId, int page) {
         RecommendationRetrofitService service = getRetrofitService().create(RecommendationRetrofitService.class);
         return service.getMovieRecommendations(movieId, Constants.API_KEY, "en-US", page);
+    }
+
+    public static Call<CastCrew> getMovieCast(int movieId) {
+        CastRetrofitService service = getRetrofitService().create(CastRetrofitService.class);
+        return service.getCastCrew(movieId, Constants.API_KEY, "en-US");
     }
 }
