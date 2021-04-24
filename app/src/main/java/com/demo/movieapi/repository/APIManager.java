@@ -18,6 +18,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 public class APIManager {
     public static final String API_BASE_URL = "https://api.themoviedb.org/3/";
     public static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
+    public static final String YOUTUBE_IMAGE_BASE_URL = "https://img.youtube.com/vi/";
 
     public static OkHttpClient createOkHttpClient() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();

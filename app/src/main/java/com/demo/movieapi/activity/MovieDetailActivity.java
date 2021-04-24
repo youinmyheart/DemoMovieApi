@@ -21,6 +21,7 @@ import com.demo.movieapi.Constants;
 import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.R;
 import com.demo.movieapi.adapter.CastRecyclerViewAdapter;
+import com.demo.movieapi.adapter.VideoRecyclerViewAdapter;
 import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.MovieDetail;
@@ -72,6 +73,10 @@ public class MovieDetailActivity extends AppCompatActivity {
     private CastViewModel castViewModel;
 
     private RecyclerView videoView;
+    private List<MovieDetail.Video> videoList;
+    private VideoRecyclerViewAdapter videoRecyclerViewAdapter;
+    private LinearLayoutManager videoLayoutManager;
+
     private ImageView imvLoadMoreComments;
     private RecyclerView commentsView;
     private ImageView imvLoadMoreRecommendations;
@@ -142,6 +147,14 @@ public class MovieDetailActivity extends AppCompatActivity {
         castViewModel = new CastViewModel();
 
         videoView = findViewById(R.id.video_list);
+        videoLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        videoView.setLayoutManager(videoLayoutManager);
+        videoView.addItemDecoration(new ItemSpaceDecoration(20));
+
+        videoList = new ArrayList<>();
+        videoRecyclerViewAdapter = new VideoRecyclerViewAdapter(this, videoList);
+        videoView.setAdapter(videoRecyclerViewAdapter);
+
         imvLoadMoreComments = findViewById(R.id.imv_load_more_comments);
         commentsView = findViewById(R.id.comments_list);
         imvLoadMoreRecommendations = findViewById(R.id.imv_load_more_recommendations);
@@ -234,6 +247,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
 
         tvMovieDate.setText(movieDetailViewModel.getMovieDate());
+
+        videoList.addAll(data.getVideoResponse().getVideos());
+        videoRecyclerViewAdapter.notifyDataSetChanged();
     }
 
     private void handleSeriesCast() {
