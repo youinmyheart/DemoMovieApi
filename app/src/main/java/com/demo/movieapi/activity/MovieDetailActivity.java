@@ -1,5 +1,6 @@
 package com.demo.movieapi.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -19,18 +21,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.Constants;
 import com.demo.movieapi.ItemSpaceDecoration;
+import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
 import com.demo.movieapi.adapter.CastRecyclerViewAdapter;
 import com.demo.movieapi.adapter.MovieReviewRecyclerViewAdapter;
+import com.demo.movieapi.adapter.RecommendationRecyclerViewAdapter;
 import com.demo.movieapi.adapter.VideoRecyclerViewAdapter;
 import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.model.MovieReview;
+import com.demo.movieapi.model.TMDBResponse;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.viewmodel.CastViewModel;
 import com.demo.movieapi.viewmodel.MovieDetailViewModel;
 import com.demo.movieapi.viewmodel.MovieReviewViewModel;
+import com.demo.movieapi.viewmodel.RecommendationViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -89,6 +95,10 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     private ImageView imvLoadMoreRecommendations;
     private RecyclerView recommendationsView;
+    private LinearLayoutManager recommendationLayoutManager;
+    private RecommendationRecyclerViewAdapter recommendationRecyclerViewAdapter;
+    private List<TMDBResponse.Movie> recommendationList;
+    private RecommendationViewModel recommendationViewModel;
 
     private int movieId;
     private MovieDetailViewModel movieDetailViewModel;
@@ -175,6 +185,21 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         imvLoadMoreRecommendations = findViewById(R.id.imv_load_more_recommendations);
         recommendationsView = findViewById(R.id.recommendations_list);
+        recommendationLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        recommendationsView.setLayoutManager(recommendationLayoutManager);
+        recommendationsView.addItemDecoration(new ItemSpaceDecoration(10));
+
+        recommendationList = new ArrayList<>();
+        recommendationViewModel = new RecommendationViewModel();
+        recommendationRecyclerViewAdapter = new RecommendationRecyclerViewAdapter(this, recommendationList);
+        recommendationRecyclerViewAdapter.setOnClickItemListener(new OnClickViewHolderItemListener() {
+            @Override
+            public void onItemClick(RecyclerView.ViewHolder viewHolder, int position) {
+                Log.d(TAG, "recommendation onItemClick position: " + position);
+                goToMovieDetailActivity(recommendationList.get(position).getId());
+            }
+        });
+        recommendationsView.setAdapter(recommendationRecyclerViewAdapter);
 
         movieId = getIntent().getExtras().getInt(Constants.MOVIE_ID_KEY, -1);
         Log.d(TAG, "movieId: " + movieId);
@@ -183,6 +208,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         getMovieDetail(movieId);
         handleSeriesCast();
         handleMovieReview();
+        handleRecommendation();
     }
 
     private void hideActionBar() {
@@ -309,5 +335,74 @@ public class MovieDetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void handleRecommendation() {
+        Log.d(TAG, "handleRecommendation");
+        getRecommendationWithPage(1);
+        recommendationsView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dx > 0) {
+                    // scroll horizontally
+                    int visibleItemCount = recommendationLayoutManager.getChildCount();
+                    Log.d(TAG, "recommendation visibleItemCount: " + visibleItemCount);
+                    int totalItemCount = recommendationLayoutManager.getItemCount();
+                    Log.d(TAG, "recommendation totalItemCount: " + totalItemCount);
+                    int pastVisibleItems = recommendationLayoutManager.findFirstVisibleItemPosition();
+                    Log.d(TAG, "recommendation pastVisibleItems: " + pastVisibleItems);
+                    Log.d(TAG, "recommendation previousTotal: " + recommendationViewModel.getPreviousTotalItems());
+                    if (recommendationViewModel.isLoading()) {
+                        if (totalItemCount > recommendationViewModel.getPreviousTotalItems()) {
+                            recommendationViewModel.setLoading(false);
+                            recommendationViewModel.setPreviousTotalItems(totalItemCount);
+                            recommendationViewModel.setCurrentPage(recommendationViewModel.getCurrentPage() + 1);
+                        }
+                    }
+                    Log.d(TAG, "recommendation loading: " + recommendationViewModel.isLoading());
+                    Log.d(TAG, "recommendation currentPage: " + recommendationViewModel.getCurrentPage());
+                    // When no new pages are being loaded,
+                    // but the user is at the end of the list, load the new page.
+                    if (!recommendationViewModel.isLoading() && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                        // Load the next page of the content in the background.
+                        getRecommendationWithPage(recommendationViewModel.getCurrentPage() + 1);
+                        recommendationViewModel.setLoading(true);
+                    }
+                }
+            }
+        });
+    }
+
+    private void getRecommendationWithPage(int page) {
+        if (page < 1 || page > 1000) {
+            Log.d(TAG, "Invalid page. Pages start at 1 and max at 1000");
+            return;
+        }
+        recommendationViewModel.getRecommendation(movieId, page).observe(this, new Observer<DataWrapper<TMDBResponse>>() {
+            @Override
+            public void onChanged(DataWrapper<TMDBResponse> tmdbResponseDataWrapper) {
+                TMDBResponse response = tmdbResponseDataWrapper.getData();
+                switch (tmdbResponseDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            recommendationList.addAll(response.getMovies());
+                            Log.d(TAG, "recommendationList size: " + recommendationList.size());
+                            recommendationRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getPopular error: " + tmdbResponseDataWrapper.getMessage());
+                        recommendationViewModel.setLoading(false); // retry
+                        break;
+                }
+            }
+        });
+    }
+
+    private void goToMovieDetailActivity(int movieId) {
+        Intent intent = new Intent(this, MovieDetailActivity.class);
+        intent.putExtra(Constants.MOVIE_ID_KEY, movieId);
+        startActivity(intent);
     }
 }

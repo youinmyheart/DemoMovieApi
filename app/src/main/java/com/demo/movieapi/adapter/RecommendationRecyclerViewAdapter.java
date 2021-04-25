@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,15 +18,16 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecyclerViewAdapter.PopularViewHolder> {
-    private static final String TAG = MovieRecyclerViewAdapter.class.getSimpleName();
+public class RecommendationRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecyclerViewAdapter.PopularViewHolder> {
+
+    private static final String TAG = RecommendationRecyclerViewAdapter.class.getSimpleName();
     private Context context;
-    private List<TMDBResponse.Movie> movieList;
+    private List<TMDBResponse.Movie> recommendationList;
     private OnClickViewHolderItemListener listener;
 
-    public MovieRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> movieList) {
+    public RecommendationRecyclerViewAdapter(Context context, List<TMDBResponse.Movie> recommendationList) {
         this.context = context;
-        this.movieList = movieList;
+        this.recommendationList = recommendationList;
     }
 
     public void setOnClickItemListener(OnClickViewHolderItemListener listener) {
@@ -37,15 +36,15 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
 
     @NonNull
     @Override
-    public PopularViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MovieRecyclerViewAdapter.PopularViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.popular_movie, parent, false);
-        return new PopularViewHolder(view);
+        return new MovieRecyclerViewAdapter.PopularViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PopularViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MovieRecyclerViewAdapter.PopularViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder position: " + position);
-        TMDBResponse.Movie movie = movieList.get(position);
+        TMDBResponse.Movie movie = recommendationList.get(position);
         String imagePath = APIManager.IMAGE_BASE_URL + "/w300" + movie.getPosterPath();
         Picasso picasso = Picasso.with(context);
         picasso.setLoggingEnabled(true);
@@ -61,7 +60,7 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
             }
         });
         holder.tvTitle.setText(movie.getTitle());
-
+        holder.imvMoreDetail.setVisibility(View.INVISIBLE);
         holder.imvMovie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,20 +73,6 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
 
     @Override
     public int getItemCount() {
-        return movieList.size();
-    }
-
-    public static class PopularViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView imvMovie;
-        TextView tvTitle;
-        ImageView imvMoreDetail;
-
-        public PopularViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imvMovie = itemView.findViewById(R.id.imv_movie);
-            tvTitle = itemView.findViewById(R.id.tv_title);
-            imvMoreDetail = itemView.findViewById(R.id.imv_more_detail);
-        }
+        return recommendationList.size();
     }
 }
