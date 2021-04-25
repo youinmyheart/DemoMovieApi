@@ -21,13 +21,16 @@ import com.demo.movieapi.Constants;
 import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.R;
 import com.demo.movieapi.adapter.CastRecyclerViewAdapter;
+import com.demo.movieapi.adapter.MovieReviewRecyclerViewAdapter;
 import com.demo.movieapi.adapter.VideoRecyclerViewAdapter;
 import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.MovieDetail;
+import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.viewmodel.CastViewModel;
 import com.demo.movieapi.viewmodel.MovieDetailViewModel;
+import com.demo.movieapi.viewmodel.MovieReviewViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -79,6 +82,11 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     private ImageView imvLoadMoreComments;
     private RecyclerView commentsView;
+    private LinearLayoutManager commentsLayoutManager;
+    private MovieReviewRecyclerViewAdapter movieReviewRecyclerViewAdapter;
+    private List<MovieReview.ReviewDetail> reviewList;
+    private MovieReviewViewModel movieReviewViewModel;
+
     private ImageView imvLoadMoreRecommendations;
     private RecyclerView recommendationsView;
 
@@ -157,6 +165,14 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         imvLoadMoreComments = findViewById(R.id.imv_load_more_comments);
         commentsView = findViewById(R.id.comments_list);
+        commentsLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        commentsView.setLayoutManager(commentsLayoutManager);
+
+        reviewList = new ArrayList<>();
+        movieReviewViewModel = new MovieReviewViewModel();
+        movieReviewRecyclerViewAdapter = new MovieReviewRecyclerViewAdapter(this, reviewList, movieReviewViewModel);
+        commentsView.setAdapter(movieReviewRecyclerViewAdapter);
+
         imvLoadMoreRecommendations = findViewById(R.id.imv_load_more_recommendations);
         recommendationsView = findViewById(R.id.recommendations_list);
 
@@ -166,6 +182,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         movieDetailViewModel = new MovieDetailViewModel();
         getMovieDetail(movieId);
         handleSeriesCast();
+        handleMovieReview();
     }
 
     private void hideActionBar() {
@@ -267,6 +284,27 @@ public class MovieDetailActivity extends AppCompatActivity {
                         break;
                     case ERROR:
                         Log.d(TAG, "getUpcoming error: " + castCrewDataWrapper.getMessage());
+                        break;
+                }
+            }
+        });
+    }
+
+    private void handleMovieReview() {
+        movieReviewViewModel.getMovieReview(movieId, 1).observe(this, new Observer<DataWrapper<MovieReview>>() {
+            @Override
+            public void onChanged(DataWrapper<MovieReview> movieReviewDataWrapper) {
+                MovieReview response = movieReviewDataWrapper.getData();
+                switch (movieReviewDataWrapper.getStatus()) {
+                    case SUCCESS:
+                        if (response != null) {
+                            reviewList.addAll(response.getReviewDetails());
+                            Log.d(TAG, "reviewList size: " + reviewList.size());
+                            movieReviewRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                    case ERROR:
+                        Log.d(TAG, "getReviews error: " + movieReviewDataWrapper.getMessage());
                         break;
                 }
             }

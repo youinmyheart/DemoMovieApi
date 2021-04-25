@@ -2,7 +2,6 @@ package com.demo.movieapi.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,9 +24,6 @@ import com.demo.movieapi.adapter.MovieRecyclerViewAdapter;
 import com.demo.movieapi.adapter.TrendingRecyclerViewAdapter;
 import com.demo.movieapi.model.DataWrapper;
 import com.demo.movieapi.model.GenreResponse;
-import com.demo.movieapi.model.MovieDetail;
-import com.demo.movieapi.model.MovieReview;
-import com.demo.movieapi.repository.APIManager;
 import com.demo.movieapi.model.TMDBResponse;
 import com.demo.movieapi.viewmodel.GenreViewModel;
 import com.demo.movieapi.viewmodel.PopularViewModel;
@@ -37,10 +33,6 @@ import com.demo.movieapi.viewmodel.UpcomingViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,9 +74,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         setUpView();
-//        getMovieDetail();
-//        getMovieReview();
-//        getMovieRecommendations();
     }
 
     private void setUpView() {

@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.R;
-import com.demo.movieapi.model.CastCrew;
 import com.demo.movieapi.model.MovieDetail;
 import com.demo.movieapi.repository.APIManager;
 import com.squareup.picasso.Callback;
