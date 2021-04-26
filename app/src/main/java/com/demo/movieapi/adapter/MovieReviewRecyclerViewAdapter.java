@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.R;
+import com.demo.movieapi.CustomRatingBar;
 import com.demo.movieapi.model.MovieReview;
 import com.demo.movieapi.viewmodel.MovieReviewViewModel;
 import com.squareup.picasso.Callback;
@@ -62,6 +63,7 @@ public class MovieReviewRecyclerViewAdapter extends RecyclerView.Adapter<MovieRe
         holder.tvAuthor.setText(review.getAuthor());
         holder.tvContent.setText(review.getContent());
         holder.tvMoviePoint.setText(viewModel.getMoviePoint(review));
+        holder.commentRating.setRating((float)review.getAuthorDetail().getRating() / 2);
         holder.tvTimeAgo.setText(viewModel.getTimeAgo(review));
     }
 
@@ -78,11 +80,7 @@ public class MovieReviewRecyclerViewAdapter extends RecyclerView.Adapter<MovieRe
         TextView tvContent;
         LinearLayout containerRateStar;
         TextView tvMoviePoint;
-        ImageView imvStar1;
-        ImageView imvStar2;
-        ImageView imvStar3;
-        ImageView imvStar4;
-        ImageView imvStar5;
+        CustomRatingBar commentRating;
         TextView tvTimeAgo;
 
         public MovieReviewViewHolder(@NonNull View itemView) {
@@ -92,11 +90,7 @@ public class MovieReviewRecyclerViewAdapter extends RecyclerView.Adapter<MovieRe
             tvContent = itemView.findViewById(R.id.tv_content);
             containerRateStar = itemView.findViewById(R.id.container_rate_star);
             tvMoviePoint = itemView.findViewById(R.id.tv_movie_point);
-            imvStar1 = itemView.findViewById(R.id.imv_star_1);
-            imvStar2 = itemView.findViewById(R.id.imv_star_2);
-            imvStar3 = itemView.findViewById(R.id.imv_star_3);
-            imvStar4 = itemView.findViewById(R.id.imv_star_4);
-            imvStar5 = itemView.findViewById(R.id.imv_star_5);
+            commentRating = itemView.findViewById(R.id.comment_rating);
             tvTimeAgo = itemView.findViewById(R.id.tv_time_ago);
         }
     }

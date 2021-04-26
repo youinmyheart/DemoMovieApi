@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.demo.movieapi.Constants;
+import com.demo.movieapi.CustomRatingBar;
 import com.demo.movieapi.ItemSpaceDecoration;
 import com.demo.movieapi.OnClickViewHolderItemListener;
 import com.demo.movieapi.R;
@@ -42,6 +43,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
@@ -52,12 +54,9 @@ public class MovieDetailActivity extends AppCompatActivity {
     private ImageView imvPlayBackdrop;
     private ImageView imvPoster;
     private TextView tvMoviePoint;
+    private CustomRatingBar movieRating;
+    private CustomRatingBar userRating;
     private LinearLayout containerStar;
-    private ImageView imvStar1;
-    private ImageView imvStar2;
-    private ImageView imvStar3;
-    private ImageView imvStar4;
-    private ImageView imvStar5;
     private TextView tvMovieDate;
     private CardView cardGenre1;
     private TextView tvGenre1;
@@ -67,13 +66,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     private TextView tvOverview;
     private TextView tvReadMore;
     private TextView tvFavorite;
-    private LinearLayout containerRateStar;
-    private ImageView imvRateStar1;
-    private ImageView imvRateStar2;
-    private ImageView imvRateStar3;
-    private ImageView imvRateStar4;
-    private ImageView imvRateStar5;
-    private TextView tvNumberStar;
+    private TextView tvUserRating;
 
     private RecyclerView seriesCastView;
     private List<CastCrew.Cast> castList;
@@ -133,12 +126,9 @@ public class MovieDetailActivity extends AppCompatActivity {
         imvPlayBackdrop = findViewById(R.id.imvPlayBackdrop);
         imvPoster = findViewById(R.id.imvPoster);
         tvMoviePoint = findViewById(R.id.tv_movie_point);
+        movieRating = findViewById(R.id.movie_rating);
+        userRating = findViewById(R.id.user_rating);
         containerStar = findViewById(R.id.container_star);
-        imvStar1 = findViewById(R.id.imv_star_1);
-        imvStar2 = findViewById(R.id.imv_star_2);
-        imvStar3 = findViewById(R.id.imv_star_3);
-        imvStar4 = findViewById(R.id.imv_star_4);
-        imvStar5 = findViewById(R.id.imv_star_5);
         tvMovieDate = findViewById(R.id.tv_movie_date);
         cardGenre1 = findViewById(R.id.card_genre_1);
         tvGenre1 = findViewById(R.id.tv_genre_1);
@@ -147,12 +137,13 @@ public class MovieDetailActivity extends AppCompatActivity {
         tvMovieTitle = findViewById(R.id.tv_movie_title);
         tvOverview = findViewById(R.id.tv_movie_overview);
         tvReadMore = findViewById(R.id.tv_read_more);
-        containerRateStar = findViewById(R.id.container_rate_star);
-        imvRateStar1 = findViewById(R.id.rate_star_1);
-        imvRateStar2 = findViewById(R.id.rate_star_2);
-        imvRateStar3 = findViewById(R.id.rate_star_3);
-        imvRateStar4 = findViewById(R.id.rate_star_4);
-        imvRateStar5 = findViewById(R.id.rate_star_5);
+        tvUserRating = findViewById(R.id.tv_number_star);
+        userRating.setOnRatingBarChangeListener(new CustomRatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(CustomRatingBar ratingBar, float rating, boolean fromUser) {
+                tvUserRating.setText(String.format(Locale.US, "%.1f", rating));
+            }
+        });
 
         seriesCastView = findViewById(R.id.series_cast_list);
         castLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
@@ -277,6 +268,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         tvMovieTitle.setText(data.getTitle());
         tvOverview.setText(data.getOverview());
         tvMoviePoint.setText(movieDetailViewModel.getRating());
+        movieRating.invalidate();
+        movieRating.setRating(data.getVoteAverage() / 2);
 
         String genre1 = movieDetailViewModel.getGenre1();
         String genre2 = movieDetailViewModel.getGenre2();

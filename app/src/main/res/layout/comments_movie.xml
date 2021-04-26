@@ -51,41 +51,20 @@
                 android:text="4.0"
                 android:layout_gravity="center_vertical"
                 style="@style/MoviePointTextSmall" />
-            <ImageView
-                android:id="@+id/imv_star_1"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
+            <com.demo.movieapi.CustomRatingBar
+                android:id="@+id/comment_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/ic_star_gray_2"/>
-            <ImageView
-                android:id="@+id/imv_star_2"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/ic_star_gray_2"/>
-            <ImageView
-                android:id="@+id/imv_star_3"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/ic_star_gray_2"/>
-            <ImageView
-                android:id="@+id/imv_star_4"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/ic_star_gray_2"/>
-            <ImageView
-                android:id="@+id/imv_star_5"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_gravity="center_vertical"
-                app:srcCompat="@drawable/ic_star_gray_2"/>
+                app:progress="@drawable/ic_star_off"
+                app:progressed="@drawable/ic_star"
+                app:numStars="5"
+                app:rating="0"
+                app:stepSize="0.1"
+                app:spacing="10dp"
+                app:isIndicator="true"
+                android:layout_marginStart="5dp" />
         </LinearLayout>
         <TextView
             android:id="@+id/tv_time_ago"
