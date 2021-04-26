@@ -16,4 +16,5 @@
     <color name="cast_name">#4A4A4A</color>
     <color name="cast_department">#9B9B9B</color>
     <color name="divider">#E1E1E1</color>
+    <color name="trending_shadow">#4A4A4A</color>
 </resources>

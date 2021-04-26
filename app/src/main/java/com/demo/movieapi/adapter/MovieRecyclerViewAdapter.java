@@ -82,12 +82,15 @@ public class MovieRecyclerViewAdapter extends RecyclerView.Adapter<MovieRecycler
         ImageView imvMovie;
         TextView tvTitle;
         ImageView imvMoreDetail;
+        View viewShadow;
 
         public PopularViewHolder(@NonNull View itemView) {
             super(itemView);
             imvMovie = itemView.findViewById(R.id.imv_movie);
             tvTitle = itemView.findViewById(R.id.tv_title);
             imvMoreDetail = itemView.findViewById(R.id.imv_more_detail);
+            viewShadow = itemView.findViewById(R.id.view_shadow);
+            viewShadow.setAlpha(0.3f);
         }
     }
 }

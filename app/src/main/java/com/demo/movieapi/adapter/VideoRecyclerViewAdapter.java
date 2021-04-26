@@ -64,11 +64,14 @@ public class VideoRecyclerViewAdapter extends RecyclerView.Adapter<VideoRecycler
 
         ImageView imvThumbnailVideo;
         ImageView imvPlay;
+        View viewShadow;
 
         public VideoViewHolder(@NonNull View itemView) {
             super(itemView);
             imvThumbnailVideo = itemView.findViewById(R.id.imvThumbnailVideo);
             imvPlay = itemView.findViewById(R.id.imvPlay);
+            viewShadow = itemView.findViewById(R.id.view_shadow);
+            viewShadow.setAlpha(0.1f);
         }
     }
 }

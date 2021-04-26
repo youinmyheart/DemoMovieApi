@@ -82,11 +82,13 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
 
         CardView cardView;
         ImageView imvTrending;
+        View trendingShadow;
 
         public TrendingViewHolder(@NonNull View itemView) {
             super(itemView);
             cardView = itemView.findViewById(R.id.card_view);
             imvTrending = itemView.findViewById(R.id.imv_trending);
+            trendingShadow = itemView.findViewById(R.id.trending_shadow);
             int widthPixels = Resources.getSystem().getDisplayMetrics().widthPixels;
             Log.d(TAG, "widthPixels: " + widthPixels);
             int widthDp = Utils.pxToDp(widthPixels);
@@ -96,8 +98,13 @@ public class TrendingRecyclerViewAdapter extends RecyclerView.Adapter<TrendingRe
             // 10 = additional space to see more part of next item
             int spacePx = Utils.dpToPx(32 + 36 + 10);
             Log.d(TAG, "spacePx: " + spacePx);
-            imvTrending.getLayoutParams().width = widthPixels - spacePx;
+            int imageWidth = widthPixels - spacePx;
+            imvTrending.getLayoutParams().width = imageWidth;
             imvTrending.requestLayout();
+
+            trendingShadow.setAlpha(0.3f);
+            trendingShadow.getLayoutParams().width = imageWidth - Utils.dpToPx(20);
+            trendingShadow.requestLayout();
         }
     }
 }
